@@ -51,6 +51,18 @@ public class Application {
         sellerDao.saveInsert(s2);
         System.out.println("Inserted! new Id = " + s2.getId());
 
+        System.out.println("\n=== Test 5  : Seller update ===");
+
+        s2 = sellerDao.findById(12);
+
+        s2.setName("kakashi");
+        sellerDao.update(s2);
+        System.out.println("Update Completed!");
+
+        System.out.println("\n=== Test 6  : Seller deleteById ===");
+        sellerDao.deleteById(23);
+        System.out.println("Deleted Completed!");
+
     }
 
 }
