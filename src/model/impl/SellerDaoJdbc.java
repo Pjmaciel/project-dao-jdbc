@@ -93,8 +93,43 @@ public class SellerDaoJdbc implements SellerDao {
 
     @Override
     public List<Seller> findAll() {
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+        try {
+            pst = conn.prepareStatement("SELECT seller.*,department.Name as DepName "
+                    + "FROM seller INNER JOIN department "
+                    + "ON seller.DepartmentId = department.Id "
+                    + "ORDER BY Name");
 
-        throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+            rs = pst.executeQuery();
+
+            List<Seller> list = new ArrayList<>();
+            Map<Integer, Department> map = new HashMap<>(); // lista de genericos para controlar a instancia do
+                                                            // departament.
+
+            while (rs.next()) {// como tem mais de um valor atrelado ao atributo deve fazer o while ao inves do
+                               // for.
+                Department dpt = map.get(rs.getInt("DepartmentId"));
+                if (dpt == null) {
+                    dpt = instantiateDepartment(rs);
+                    map.put(rs.getInt("DepartmentId"), dpt);
+
+                }
+
+                Seller obj = instantiateSeller(rs, dpt);
+                list.add(obj);
+            }
+            return list;
+
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } catch (UnsupportedOperationException e) {
+
+            throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+        } finally {
+            DB.closeResultSet(rs);
+            DB.closeStatement(pst);
+        }
     }
 
     @Override
@@ -117,7 +152,7 @@ public class SellerDaoJdbc implements SellerDao {
 
             while (rs.next()) { // como tem mais de um valor atrelado ao atributo deve fazer o while ao inves d
                                 // for
-                Department dpt = map.get(rs.getInt("DepartmentId"));
+                Department dpt = map.get(rs.getInt("DepartmentId"));// vai reaproveitar o department se existir um igual
 
                 if (dpt == null) {
                     dpt = instantiateDepartment(rs);
