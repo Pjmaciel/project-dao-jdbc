@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +24,42 @@ public class SellerDaoJdbc implements SellerDao {
     }
 
     @Override
-    public void save(Seller seller) {
+    public void saveInsert(Seller seller) {
 
-        throw new UnsupportedOperationException("Unimplemented method 'save'");
+        PreparedStatement pst = null;
+        try {
+            pst = conn.prepareStatement("INSERT INTO seller "
+                    + "(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+                    + "Values "
+                    + "(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+
+            pst.setString(1, seller.getName());
+            pst.setString(2, seller.getEmail());
+            pst.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
+            pst.setDouble(4, seller.getBaseSalary());
+            pst.setInt(5, seller.getDepartment().getId());
+
+            int rowsAffected = pst.executeUpdate();
+
+            if (rowsAffected > 0) {
+                ResultSet rs = pst.getGeneratedKeys();
+                if (rs.next()) {
+                    int id = rs.getInt(1); // vai pegar o id gerado pelo getGeneratedKeys
+                    seller.setId(id);// setar como Id do objeto seller criar
+                }
+                DB.closeResultSet(rs);
+            } else {
+                throw new DbException("Unexpected erro! no rows affected!");
+            }
+
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } catch (UnsupportedOperationException e) {
+            throw new UnsupportedOperationException("Unimplemented method 'save'");
+        } finally {
+            DB.closeStatement(pst);
+        }
+
     }
 
     @Override

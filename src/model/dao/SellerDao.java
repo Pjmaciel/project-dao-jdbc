@@ -7,7 +7,7 @@ import model.entities.Seller;
 
 public interface SellerDao {
 
-    public void save(Seller seller);
+    public void saveInsert(Seller seller);
 
     public void update(Seller seller);
 
